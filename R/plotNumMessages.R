@@ -1,3 +1,4 @@
+plotNumMessages =
 function(dirs = 2009:2022, ...)
 {    
     ff = lapply(as.character(dirs), function(y) list.files(y,  recursive = TRUE, full.names = TRUE))
