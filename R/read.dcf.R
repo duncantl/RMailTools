@@ -1,19 +1,36 @@
-read.dcf =
+read.dcf = function(lines, all = TRUE, asDF = TRUE, ...)
+{
+    w = grepl("^[^[:space:]]", lines)
+    els = tapply(lines, cumsum(w), paste, collapse = "")
+ #   m = regexpr(":", els)
+    ans = gsub("^([^:]+):", "", els)
+    names(ans) = gsub("^([^:]+):.*", "\\1", els)
+    if(asDF)
+        as.data.frame(as.list(ans))
+    else
+        ans
+}
+
+    
+xxxx.read.dcf =
 function (file, fields = NULL, all = FALSE, keep.white = NULL,
           lines = readLines(file, skipNul = TRUE)) 
 {
-    if(missing(lines)) {
-        if (is.character(file)) {
-            file <- gzfile(file)
-            on.exit(close(file))
-        }
-        if (!inherits(file, "connection")) 
-            stop("'file' must be a character string or connection")
-    } else
-        file = textConnection(lines, local = TRUE, name = "bob")
+    if(!missing(file)) {
+        if(missing(lines)) {
+            if (is.character(file)) {
+                file <- gzfile(file)
+                on.exit(close(file))
+            }
+            if (!inherits(file, "connection")) 
+                stop("'file' must be a character string or connection")
+        } else
+            file = textConnection(lines, local = TRUE, name = "bob")
+
+        if (!all) 
+            return(.Internal(readDCF(file, fields, keep.white)))
+    }
     
-    if (!all) 
-        return(.Internal(readDCF(file, fields, keep.white)))
     .assemble_things_into_a_data_frame <- function(tags, vals, 
         nums) {
         tf <- factor(tags, levels = unique(tags))
