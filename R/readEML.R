@@ -55,7 +55,7 @@ function(m, make = mkAttachment, all = TRUE)
     if(!"Content-Type" %in% names(m$header))
         return(m)
 
-    ty = strsplit(m$header$"Content-Type", ";")[[1]]
+    ty = strsplit(m$header["Content-Type"], ";")[[1]]
     i = grep("boundary", ty)
     if(length(i) == 0)
         return(m)
@@ -64,7 +64,7 @@ function(m, make = mkAttachment, all = TRUE)
     bndry = trimws(gsub("boundary=", "", ty[i]))
     bndry = gsub('^"|"$', '', bndry)
     bndry = paste0("--", bndry)
-    g = grepl(bndry, m$body)
+    g = grepl(bndry, m$body, fixed = TRUE)
 
     att = split(m$body, cumsum(g))
 
@@ -133,12 +133,12 @@ function(msgs, files = names(msgs))
 
     efrom = gsub(".* <(.*)>", "\\1", from)
 
-    subject = sapply(msgs, function(x) if("Subject" %in% names(x$header))  x$header$"Subject" else NA)
-    to = sapply(msgs, function(x) if("To" %in% names(x$header)) x$header$"To" else NA)
+    subject = sapply(msgs, function(x) if("Subject" %in% names(x$header))  x$header["Subject"] else NA)
+    to = sapply(msgs, function(x) if("To" %in% names(x$header)) x$header["To"] else NA)
 
     isR = sapply(msgs, function(x) if("Received" %in% names(x$header)) any(grepl("hypatia.math.ethz.ch", x$header[["Received"]])) else FALSE)
 
-    when = mkDateTime(sapply(msgs, function(x) if("Date" %in% names(x$header)) x$header$"Date" else NA))
+    when = mkDateTime(sapply(msgs, function(x) if("Date" %in% names(x$header)) x$header[["Date"]] else NA))
 
     cc = sapply(msgs, function(x) { i = tolower(names(x$header)) == "cc";  if(any(i)) paste(unlist(x$header[i]), collapse = ";") else NA})
 

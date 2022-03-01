@@ -1,4 +1,4 @@
-read.dcf = function(lines, all = TRUE, asDF = TRUE, ...)
+read.dcf = function(lines, all = TRUE, asDF = FALSE, ...)
 {
     w = grepl("^[^[:space:]]", lines)
     els = tapply(lines, cumsum(w), paste, collapse = "")
