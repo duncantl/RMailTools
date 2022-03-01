@@ -23,7 +23,7 @@ function(f, x = readLines(f, warn = FALSE), attachments = TRUE, all = TRUE)
 {
     br = which(x == "")[1]
     if(is.na(br)) return(x)
-    hdr = read.dcf(f, all = all, lines = x[1:br])
+    hdr = read.dcf(all = all, lines = x[1:br]) #read.dcf(f, all = all, lines = x[1:br])
     m = list(header = hdr, body = x[-(1:br)])
     if(attachments)
         mkAttachments(m, all = all)
@@ -46,7 +46,7 @@ readHeader =
 function(f, x = readLines(f, warn = FALSE), ...)
 {
     br = which(x == "")[1]
-    read.dcf(textConnection(x[1:br]), all = TRUE, ...)
+    read.dcf(lines = x[1:br], all = TRUE, ...)
 }
 
 mkAttachments  =
@@ -70,12 +70,18 @@ function(m, make = mkAttachment, all = TRUE)
 
     # Make more precise. Has to start with the boundary.    
 #    w = grepl(bndry, sapply(att, `[`, 1), fixed = TRUE)
-     w = substring(sapply(att, `[`, 1), 1, nchar(bndry)) == bndry
+    w = substring(sapply(att, `[`, 1), 1, nchar(bndry)) == bndry
     
     m$body = unlist(att[!w])
 
     attachments = lapply(att[w], make, bndry)
     attachments = attachments[ ! sapply(attachments, is.null) ]
+
+    multi = sapply(attachments, class) == "list"
+    if(any(multi)) {
+       attachments = c(attachments[!multi], unlist( attachments[multi], recursive = FALSE))
+    }
+    # need to unlist if there are elements that are not Attachment, but simple list() of Attachments due to a multipart/alternative
     
     m$att = attachments
     m
@@ -109,8 +115,13 @@ function(lines, boundary, all = TRUE)
     m = match("Content-type", names(h))
     if(!is.na(m))
         names(h)[m] = "Content-Type"
-    
-    list(header = h, body = lines[ -(1:br) ])
+
+    if(grepl("boundary", h["Content-Type"]) && grepl("multipart/(alternative|mixed)", h["Content-Type"])) {
+        tmp = readEmailMsg(x = lines[-1])
+        return(tmp$att)
+    }
+
+    structure(list(header = h, body = lines[ -(1:br) ]), class = "Attachment")
 }
 
 
