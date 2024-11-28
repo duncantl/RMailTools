@@ -19,17 +19,38 @@ function(f, x = readLines(f, warn = FALSE), attachments = TRUE)
 }
 
 readEmailMsg =
-function(f, x = readLines(f, warn = FALSE), attachments = TRUE, all = TRUE)
+function(f, x = readLines(f, warn = FALSE), attachments = TRUE, all = TRUE, handleEncoding = FALSE)
 {
     br = which(x == "")[1]
     if(is.na(br)) return(x)
     hdr = read.dcf(all = all, lines = x[1:br]) #read.dcf(f, all = all, lines = x[1:br])
-    m = list(header = hdr, body = x[-(1:br)])
+
+    body = x[-(1:br)]
+    if(handleEncoding && !is.na(enc <- getEncoding(hdr))) 
+        body = iconv(body, enc, "utf8")
+
+    m = list(header = hdr, body = body)
     if(attachments)
         mkAttachments(m, all = all)
     else
         m
 }
+
+
+getEncoding =
+function(h)
+{
+    ty = h["Content-Type"]
+    els = trimws(strsplit(ty, ";")[[1]])
+    i = grep("^charset=", els)
+
+    if(length(i) == 0)
+        return(NA)
+
+    ans = gsub(".*=", "", els[i])
+    gsub('^"|"$', '', ans)
+}
+
 
 
 readDCF =
@@ -110,7 +131,10 @@ function(lines, boundary, all = TRUE)
         return(NULL)
 
     br = which(lines == "")[1]
-
+    if(is.na(br))
+        # ?? possible to have a legitimate header but no body for the attachment.
+        return(NULL)
+    
     h = read.dcf(lines = lines[2:(br-1)], all = all)
     m = match("Content-type", names(h))
     if(!is.na(m))
