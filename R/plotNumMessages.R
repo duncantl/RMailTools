@@ -1,5 +1,5 @@
 plotNumMessages =
-function(dirs = 2009:2022, ...)
+function(dirs = 2009:2022, ylim = 400, ...)
 {    
     ff = lapply(as.character(dirs), function(y) list.files(y,  recursive = TRUE, full.names = TRUE))
     ff2 = unlist(ff)
@@ -8,7 +8,7 @@ function(dirs = 2009:2022, ...)
     z = data.frame( d = as.Date(names(num)), num = num)
     z2 = z[order(z$d), ]
 
-    plot(z2$d, z2$num, type = "l", ylim = c(0, 400), ...)
+    plot(z2$d, z2$num, type = "l", ylim = c(0, ylim), ...)
     invisible(z2)
 }
 
