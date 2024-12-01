@@ -1,5 +1,8 @@
 read.dcf = function(lines, all = TRUE, asDF = FALSE, ...)
 {
+
+    lines = tryCatch({gsub("xxx:", "", lines); x}, error = function(...) iconv(lines, "latin1"))
+    
     w = grepl("^[^[:space:]]", lines)
     els = tapply(lines, cumsum(w), paste, collapse = "")
  #   m = regexpr(":", els)
