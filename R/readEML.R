@@ -29,9 +29,9 @@ function(f, x = readLines(f, warn = FALSE), attachments = TRUE, all = TRUE, hand
     if(handleEncoding && !is.na(enc <- getEncoding(hdr))) 
         body = iconv(body, enc, "utf8")
 
-    m = list(header = hdr, body = body)
+    m = list(header = hdr, body = body, file = f)
     if(attachments)
-        mkAttachments(m, all = all)
+        mkAttachments(m, all = all, file = f)
     else
         m
 }
@@ -71,7 +71,7 @@ function(f, x = readLines(f, warn = FALSE), ...)
 }
 
 mkAttachments  =
-function(m, make = mkAttachment, all = TRUE)
+function(m, make = mkAttachment, all = TRUE, file = NA)
 {
     if(!"Content-Type" %in% names(m$header))
         return(m)
@@ -95,7 +95,7 @@ function(m, make = mkAttachment, all = TRUE)
     
     m$body = unlist(att[!w])
 
-    attachments = lapply(att[w], make, bndry)
+    attachments = lapply(att[w], make, bndry, file = file)
     attachments = attachments[ ! sapply(attachments, is.null) ]
 
     multi = sapply(attachments, class) == "list"
@@ -125,7 +125,7 @@ function(lines, boundary, all = TRUE)
 
 
 mkAttachment =
-function(lines, boundary, all = TRUE)
+function(lines, boundary, all = TRUE, file = NA)
 {
     if(lines[1] == paste0(boundary, "--") & length(lines[lines != ""]) == 1 )
         return(NULL)
@@ -141,7 +141,7 @@ function(lines, boundary, all = TRUE)
         names(h)[m] = "Content-Type"
 
     if(grepl("boundary", h["Content-Type"]) && grepl("multipart/(alternative|mixed)", h["Content-Type"])) {
-        tmp = readEmailMsg(x = lines[-1])
+        tmp = readEmailMsg(x = lines[-1], f = file)
         return(tmp$att)
     }
 
@@ -195,7 +195,7 @@ function(x)
 {
     tmp = strsplit(x$header[["Content-Type"]], ";")[[1]]
     tmp = trimws(unique(unlist(tmp)))
-    tmp = tmp[ !grepl("boundary|multipart", tmp) ]
+    tmp[ !grepl("boundary|multipart", tmp) ]
    # grep("[^/]pdf", tmp, value = TRUE)
 }
 
