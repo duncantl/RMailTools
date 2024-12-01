@@ -1,7 +1,6 @@
 read.dcf = function(lines, all = TRUE, asDF = FALSE, ...)
 {
-
-    lines = tryCatch({gsub("xxx:", "", lines); x}, error = function(...) iconv(lines, "latin1"))
+    lines = tryCatch({gsub("xxx:", "", lines); lines}, error = function(...) iconv(lines, "latin1"))
     
     w = grepl("^[^[:space:]]", lines)
     els = tapply(lines, cumsum(w), paste, collapse = "")
@@ -14,6 +13,8 @@ read.dcf = function(lines, all = TRUE, asDF = FALSE, ...)
         ans
 }
 
+
+if(FALSE) {
     
 xxxx.read.dcf =
 function (file, fields = NULL, all = FALSE, keep.white = NULL,
@@ -100,4 +101,6 @@ function (file, fields = NULL, all = FALSE, keep.white = NULL,
     if (!is.null(fields)) 
         out <- out[fields]
     out
+}
+
 }
