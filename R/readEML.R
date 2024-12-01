@@ -203,8 +203,8 @@ function(x)
 saveAttachment =
 function(att, to = file.path(dir, getAttachmentName(att)), dir = ".")
 {
-    val = base64enc::base64decode(att$body)
-    Gradhub::savePDF(val, to)
+    val = base64decode(att$body) # base64enc::
+    savePDF(val, to) # Gradhub::   Probably can use writeBin()
 }
 
 getAttachmentName =

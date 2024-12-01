@@ -1,1 +1,5 @@
 exportPattern(".*")
+
+importFrom(Gradhub, savePDF)  # probably can now use base::writeBin
+importFrom(base64enc, base64decode)
+
